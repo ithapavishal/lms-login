@@ -37,54 +37,48 @@ pipeline {
             agent {
                 label 'ubuntu-pipeline-slave-node'
             }
-            steps {
-                echo 'Running app on development env'
-                sh '''
-                docker stop elearningdev || true
-                docker rm elearningdev || true
-                docker run -itd --name elearningdev -p 8000:8000 $dockerImage:$BUILD_NUMBER
-                '''
-            }
             // steps {
-            //     echo 'Deploying to development environment using Ansible'
+            //     echo 'Running app on development env'
             //     sh '''
-            //     ansible-playbook -i inventory deploy.yml --extra-vars "env=dev image_tag=$dockerImage:$BUILD_NUMBER"
+            //     docker stop elearningdev || true
+            //     docker rm elearningdev || true
+            //     docker run -itd --name elearningdev -p 8000:8000 $dockerImage:$BUILD_NUMBER
             //     '''
-            //     sh '''
-            //     ansible-playbook -i inventory deploy.yml --extra-vars "env=dev image_tag=$dockerImage:$BUILD_NUMBER" --user vagrant --ask-pass
-            //     '''
-
             // }
+            steps {
+                echo 'Deploying to development environment using Ansible'
+                sh '''
+                ansible-playbook -i inventory deploy.yaml --extra-vars "env=dev image_tag=$dockerImage:$BUILD_NUMBER"
+                '''
+           
+            }
         }
         stage('Deploy to Production Env') {
             agent {
                 label 'ubuntu-pipeline-slave-node'
             }
-            steps {
-                timeout(time: 1, unit: 'DAYS') {
-                    input id: 'confirm', message: 'Approve deployment to production environment?'
-                }
-                echo "Running app on prod env"
-                sh '''
-                docker stop elearningprod || true
-                docker rm elearningprod || true
-                docker run -itd --name elearningprod -p 8001:8000 $dockerImage:$BUILD_NUMBER
-                '''
-            }
-
             // steps {
             //     timeout(time: 1, unit: 'DAYS') {
             //         input id: 'confirm', message: 'Approve deployment to production environment?'
             //     }
-            //     echo 'Deploying to production environment using Ansible'
+            //     echo "Running app on prod env"
             //     sh '''
-            //     ansible-playbook -i inventory deploy.yml --extra-vars "env=prod image_tag=$dockerImage:$BUILD_NUMBER"
+            //     docker stop elearningprod || true
+            //     docker rm elearningprod || true
+            //     docker run -itd --name elearningprod -p 8001:8000 $dockerImage:$BUILD_NUMBER
             //     '''
-            //     sh '''
-            //     ansible-playbook -i inventory deploy.yml --extra-vars "env=prod image_tag=$dockerImage:$BUILD_NUMBER" --user vagrant --ask-pass
-            //     '''
-
             // }
+
+            steps {
+                timeout(time: 1, unit: 'DAYS') {
+                    input id: 'confirm', message: 'Approve deployment to production environment?'
+                }
+                echo 'Deploying to production environment using Ansible'
+                sh '''
+                ansible-playbook -i inventory deploy.yaml --extra-vars "env=prod image_tag=$dockerImage:$BUILD_NUMBER"
+                '''
+
+            }
         }
     }
     post {

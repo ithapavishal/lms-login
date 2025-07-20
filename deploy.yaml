@@ -1,0 +1,55 @@
+---
+- name: Deploy e-learning app to Docker
+  hosts: "{{ env }}"
+  become: yes
+  vars:
+    image_tag: "{{ image_tag | default('thapavishal/elearning:latest') }}"
+    container_name: "{{ 'elearningdev' if env == 'dev' else 'elearningprod' }}"
+    host_port: "{{ '8000' if env == 'dev' else '8001' }}"
+    container_port: 8000
+  tasks:
+    - name: Install Docker package
+      package:
+        name: docker.io
+        state: present
+      when: ansible_distribution == "Ubuntu"
+
+    - name: Start and enable Docker service
+      service:
+        name: docker
+        state: started
+        enabled: yes
+      when: ansible_distribution == "Ubuntu"
+
+    - name: Stop and remove existing container
+      docker_container:
+        name: "{{ container_name }}"
+        state: absent
+      ignore_errors: yes
+      when: env == "{{ env }}"
+
+    - name: Pull the latest Docker image
+      docker_image:
+        name: "{{ image_tag }}"
+        source: pull
+        state: present
+      when: env == "{{ env }}"
+
+    - name: Run the Docker container
+      docker_container:
+        name: "{{ container_name }}"
+        image: "{{ image_tag }}"
+        state: started
+        restart_policy: unless-stopped
+        ports:
+          - "{{ host_port }}:{{ container_port }}"
+        # env:
+        #   DJANGO_SETTINGS_MODULE: "eschoolProject.settings"
+      register: container_result
+      when: env == "{{ env }}"
+
+    - name: Verify container is running
+      command: docker ps -q -f name={{ container_name }}
+      register: container_check
+      failed_when: container_check.stdout == ""
+      when: env == "{{ env }}"
