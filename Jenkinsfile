@@ -74,7 +74,7 @@ pipeline {
                 sh '''
                 docker stop elearningprod || true
                 docker rm elearningprod || true
-                docker run -itd --name elearningprod -p 8000:8000 $dockerImage:$BUILD_NUMBER
+                docker run -itd --name elearningprod -p 8001:8000 $dockerImage:$BUILD_NUMBER
                 '''
             }
 
