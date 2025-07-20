@@ -25,7 +25,6 @@
       docker_container:
         name: "{{ container_name }}"
         state: absent
-      ignore_errors: yes
       when: env == "{{ env }}"
 
     - name: Pull the latest Docker image
@@ -43,13 +42,5 @@
         restart_policy: unless-stopped
         ports:
           - "{{ host_port }}:{{ container_port }}"
-        # env:
-        #   DJANGO_SETTINGS_MODULE: "eschoolProject.settings"
       register: container_result
-      when: env == "{{ env }}"
-
-    - name: Verify container is running
-      command: docker ps -q -f name={{ container_name }}
-      register: container_check
-      failed_when: container_check.stdout == ""
       when: env == "{{ env }}"
