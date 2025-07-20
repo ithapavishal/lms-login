@@ -51,6 +51,16 @@ pipeline {
                 docker run -itd --name elearningdev -p 8000:8000 $dockerImage:$BUILD_NUMBER
                 '''
             }
+            // steps {
+            //     echo 'Deploying to development environment using Ansible'
+            //     sh '''
+            //     ansible-playbook -i inventory deploy.yml --extra-vars "env=dev image_tag=$dockerImage:$BUILD_NUMBER"
+            //     '''
+            //     sh '''
+            //     ansible-playbook -i inventory deploy.yml --extra-vars "env=dev image_tag=$dockerImage:$BUILD_NUMBER" --user vagrant --ask-pass
+            //     '''
+
+            // }
         }
         stage('Deploy to Production Env') {
             agent {
@@ -67,6 +77,20 @@ pipeline {
                 docker run -itd --name elearningprod -p 8000:8000 $dockerImage:$BUILD_NUMBER
                 '''
             }
+
+            // steps {
+            //     timeout(time: 1, unit: 'DAYS') {
+            //         input id: 'confirm', message: 'Approve deployment to production environment?'
+            //     }
+            //     echo 'Deploying to production environment using Ansible'
+            //     sh '''
+            //     ansible-playbook -i inventory deploy.yml --extra-vars "env=prod image_tag=$dockerImage:$BUILD_NUMBER"
+            //     '''
+            //     sh '''
+            //     ansible-playbook -i inventory deploy.yml --extra-vars "env=prod image_tag=$dockerImage:$BUILD_NUMBER" --user vagrant --ask-pass
+            //     '''
+
+            // }
         }
     }
     post {
