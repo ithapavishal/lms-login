@@ -18,12 +18,6 @@ pipeline {
             steps {
                 sh 'docker build -t $dockerImage:$BUILD_NUMBER .'
             }
-            post {
-                success {
-                    echo "Build completed, archiving artifacts"
-                    archiveArtifacts artifacts: '**.sqlite3', followSymlinks: false
-                }
-            }
         }
 
         stage('Push Image') {
