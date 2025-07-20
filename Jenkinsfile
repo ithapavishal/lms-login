@@ -8,7 +8,7 @@ pipeline {
     stages {
         stage('Checkout from GitHub') {
             steps {
-                git url: 'https://github.com/ithapavishal/e-learning.git', branch: 'jenkins-pipeline'
+                git url: 'https://github.com/ithapavishal/lms-login.git', branch: 'jenkins-pipeline'
             }
         }
         stage('Build Django App') {
@@ -16,7 +16,7 @@ pipeline {
                 label 'ubuntu-pipeline-slave-node'
             }
             steps {
-                sh 'docker-compose build'
+                sh 'docker build -t $dockerImage:$BUILD_NUMBER .'
             }
             post {
                 success {
@@ -25,15 +25,7 @@ pipeline {
                 }
             }
         }
-        stage('Build Docker Image') {
-            agent {
-                label 'ubuntu-pipeline-slave-node'
-            }
-            steps {
-                echo "Building docker image"
-                sh 'docker build -t $dockerImage:$BUILD_NUMBER .'
-            }
-        }
+
         stage('Push Image') {
             agent {
                 label 'ubuntu-pipeline-slave-node'
@@ -46,6 +38,7 @@ pipeline {
                 }
             }
         }
+
         stage('Deploy to Development Env') {
             agent {
                 label 'ubuntu-pipeline-slave-node'
@@ -53,9 +46,9 @@ pipeline {
             steps {
                 echo 'Running app on development env'
                 sh '''
-                docker stop eschooldev || true
-                docker rm eschooldev || true
-                docker run -itd --name eschooldev -p 8000:8000 $dockerImage:$BUILD_NUMBER
+                docker stop elearningdev || true
+                docker rm elearningdev || true
+                docker run -itd --name elearningdev -p 8000:8000 $dockerImage:$BUILD_NUMBER
                 '''
             }
         }
@@ -69,9 +62,9 @@ pipeline {
                 }
                 echo "Running app on prod env"
                 sh '''
-                docker stop eschoolprod || true
-                docker rm eschoolprod || true
-                docker run -itd --name eschoolprod -p 8000:8000 $dockerImage:$BUILD_NUMBER
+                docker stop elearningprod || true
+                docker rm elearningprod || true
+                docker run -itd --name elearningprod -p 8000:8000 $dockerImage:$BUILD_NUMBER
                 '''
             }
         }
